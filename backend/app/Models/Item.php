@@ -8,4 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Item extends Model
 {
     use HasFactory;
+
+    public static function getPublicItems() {
+        return Item::where('status', 'on_sale')->get();
+    }
 }

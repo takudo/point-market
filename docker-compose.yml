@@ -1,5 +1,5 @@
 services:
-    laravel.test:
+    laravel:
         build:
             context: ./backend/vendor/laravel/sail/runtimes/8.2
             dockerfile: Dockerfile
@@ -19,6 +19,7 @@ services:
             IGNITION_LOCAL_SITES_PATH: '${PWD}'
         volumes:
             - './backend:/var/www/html'
+            - './api-docs:/var/www/html/storage/api-docs'
         networks:
             - sail
         depends_on:
