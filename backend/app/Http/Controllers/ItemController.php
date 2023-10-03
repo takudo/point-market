@@ -49,6 +49,6 @@ class ItemController extends Controller
         if($item) {
             return new ItemResource($item);
         }
-        return response('notfound', 404);
+        return response(['message' => 'Not found item.'], 404);
     }
 }

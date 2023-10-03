@@ -27,4 +27,4 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::resource('my/items', ItemController::class);
 });
 
-Route::resource('items', ItemController::class);
+Route::resource('items', ItemController::class, ['only' => ['index', 'show']]);
