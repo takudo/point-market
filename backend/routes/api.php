@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\HealthCheckController;
+use App\Http\Controllers\ItemController;
+use App\Http\Controllers\MyItemController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +20,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('health', HealthCheckController::class);
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::post('login', [UserController::class, 'login']);
+
+Route::middleware('auth:sanctum')->group(function() {
+    Route::get('/users/me', [UserController::class, 'me']);
+
+    Route::resource('my/items', MyItemController::class);
 });
+
+Route::resource('items', ItemController::class, ['only' => ['index', 'show']]);

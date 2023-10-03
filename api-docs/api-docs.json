@@ -1,0 +1,221 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "PointMarket Backend API",
+        "version": "0.1"
+    },
+    "servers": [
+        {
+            "url": "http://localhost"
+        }
+    ],
+    "paths": {
+        "/api/items": {
+            "get": {
+                "tags": [
+                    "Item"
+                ],
+                "description": "現在販売中（= status が on_sale）の商品の一覧を取得する",
+                "operationId": "getItems",
+                "responses": {
+                    "200": {
+                        "description": "AOK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ItemResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/items/{item_id}": {
+            "get": {
+                "tags": [
+                    "Item"
+                ],
+                "description": "現在販売中（= status が on_sale）の商品で指定されたIDの商品を取得する",
+                "operationId": "getItemById",
+                "parameters": [
+                    {
+                        "name": "item_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "AOK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ItemResource"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/my/items": {
+            "get": {
+                "tags": [
+                    "MyItem"
+                ],
+                "summary": "Display a listing of the resource.",
+                "description": "自分の登録している商品の一覧を取得する",
+                "operationId": "getMyItems",
+                "responses": {
+                    "200": {
+                        "description": "AOK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ItemResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "operationId": "postUserLogin",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserLoginPostRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "AOK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResource"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not allowed"
+                    }
+                }
+            }
+        },
+        "/api/users/me": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "operationId": "getMe",
+                "responses": {
+                    "200": {
+                        "description": "AOK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResource"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not allowed"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "UserLoginPostRequest": {
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ItemResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "description": "品名",
+                        "type": "string"
+                    },
+                    "description": {
+                        "description": "商品詳細",
+                        "type": "string"
+                    },
+                    "status": {
+                        "description": "状態",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "UserResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "description": "品名",
+                        "type": "string"
+                    },
+                    "points": {
+                        "description": "保有ポイント",
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "X-XSRF-TOKEN": {
+                "type": "apiKey",
+                "name": "XSRF-TOKEN",
+                "in": "cookie"
+            }
+        }
+    }
+}
