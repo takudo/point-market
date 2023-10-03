@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\ItemCollection;
+use App\Http\Resources\MyItemCollection;
 use App\Models\Item;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use OpenApi\Attributes as OA;
 
 class MyItemController extends Controller
@@ -21,7 +22,7 @@ class MyItemController extends Controller
             new OA\Response(response: 200, description: 'AOK',
                 content: new OA\JsonContent(
                     properties: [
-                        new OA\Property('data', type: 'array', items: new OA\Items(ref: 'App\Http\Resources\ItemResource'))
+                        new OA\Property('data', type: 'array', items: new OA\Items(ref: 'App\Http\Resources\MyItemResource'))
                     ]
                 )
             ),
@@ -29,9 +30,9 @@ class MyItemController extends Controller
     )]
     public function index()
     {
-        return new ItemCollection(Item::all());
+        $me = Auth::user();
+        return new MyItemCollection(Item::where('seller_user_id', $me->id)->get());
     }
-
 
     /**
      * Store a newly created resource in storage.

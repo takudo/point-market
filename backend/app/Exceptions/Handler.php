@@ -2,7 +2,12 @@
 
 namespace App\Exceptions;
 
+use App\Http\Resources\ErrorResource;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Arr;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -24,7 +29,58 @@ class Handler extends ExceptionHandler
     public function register(): void
     {
         $this->reportable(function (Throwable $e) {
-            //
+            switch ($e->getStatusCode()) {
+                case 401:
+                    $message = __('Unauthorized');
+                    break;
+                case 403:
+                    $message = __('Forbidden');
+                    break;
+                case 404:
+                    $message = __('Not Found');
+                    break;
+                case 500:
+                    $message = __('Internal Server Error');
+                    break;
+                default:
+                    return;
+            }
+
+            $errorMessage = [
+                'message' => $message,
+            ];
+
+            return (new ErrorResource($errorMessage))->response()->setStatusCode($e->getStatusCode());
         });
+
+        $this->renderable(function (ValidationException $e, $request) {
+            if ($request->is('api/*')) {
+                $message = $e->getMessage();
+
+                if ($e->errors()) {
+                    $message = Arr::flatten($e->errors())[0];
+                };
+                $errorMessage = [
+                    'message' => $message,
+                ];
+
+                return (new ErrorResource($errorMessage))->response()->setStatusCode($e->status);
+            };
+        });
+    }
+
+    /**
+     * refs: https://qiita.com/kat0/items/92e598b7ed50a55db616
+     * @param $request
+     * @param AuthenticationException $e
+     * @return JsonResponse
+     */
+    protected function unauthenticated($request, AuthenticationException $e): JsonResponse
+    {
+        $errorMessage = [
+            'message' => "Unauthorized",
+        ];
+
+        return (new ErrorResource($errorMessage))->response()->setStatusCode(401);
     }
 }
