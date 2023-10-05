@@ -29,28 +29,34 @@ class Handler extends ExceptionHandler
     public function register(): void
     {
         $this->reportable(function (Throwable $e) {
-            switch ($e->getStatusCode()) {
-                case 401:
-                    $message = __('Unauthorized');
-                    break;
-                case 403:
-                    $message = __('Forbidden');
-                    break;
-                case 404:
-                    $message = __('Not Found');
-                    break;
-                case 500:
-                    $message = __('Internal Server Error');
-                    break;
-                default:
-                    return;
+            if(method_exists($e, 'getStatusCode')) {
+                $statusCode = $e->getStatusCode();
+                switch ($e->getStatusCode()) {
+                    case 401:
+                        $message = __('Unauthorized');
+                        break;
+                    case 403:
+                        $message = __('Forbidden');
+                        break;
+                    case 404:
+                        $message = __('Not Found');
+                        break;
+                    case 500:
+                        $message = __('Internal Server Error');
+                        break;
+                    default:
+                        return;
+                }
+            } else {
+                $statusCode = 500;
+                $message = __('Internal Server Error');
             }
 
             $errorMessage = [
                 'message' => $message,
             ];
 
-            return (new ErrorResource($errorMessage))->response()->setStatusCode($e->getStatusCode());
+            return (new ErrorResource($errorMessage))->response()->setStatusCode($statusCode);
         });
 
         $this->renderable(function (ValidationException $e, $request) {

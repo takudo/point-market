@@ -88,7 +88,7 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/ItemResource"
+                                                "$ref": "#/components/schemas/MyItemResource"
                                             }
                                         }
                                     },
@@ -154,11 +154,58 @@
                     }
                 }
             }
+        },
+        "/api/users/register": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "operationId": "postUserRegister",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserRegisterPostRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "AOK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserRegisterResource"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not allowed"
+                    }
+                }
+            }
         }
     },
     "components": {
         "schemas": {
             "UserLoginPostRequest": {
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "UserRegisterPostRequest": {
                 "required": [
                     "email",
                     "password"
@@ -188,6 +235,35 @@
                     },
                     "status": {
                         "description": "状態",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "MyItemResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "description": "品名",
+                        "type": "string"
+                    },
+                    "description": {
+                        "description": "商品詳細",
+                        "type": "string"
+                    },
+                    "status": {
+                        "description": "状態",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "UserRegisterResource": {
+                "properties": {
+                    "email_verification_url": {
+                        "description": "メールアドレス確認URL",
                         "type": "string"
                     }
                 },
