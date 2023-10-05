@@ -23,7 +23,7 @@ Route::post('/users/register', [UserController::class, 'store']);
 Route::get('/verify-email/{id}/{hash}', [UserController::class, 'verifyEmail'])
     ->middleware(['signed', 'throttle:6,1'])
     ->name('verification.verify');
-Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+Route::post('/login', [UserController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function() {
     Route::get('/users/me', [UserController::class, 'me']);
