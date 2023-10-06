@@ -44,6 +44,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ItemResource'
+  '/api/items/{item_id}/buy':
+    post:
+      tags:
+        - Item
+      description: '現在販売中（= status が on_sale）の商品で指定されたIDの商品を、自身の保有するポイントで購入する'
+      operationId: buyItemById
+      parameters:
+        -
+          name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: AOK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResource'
   /api/my/items:
     get:
       tags:

@@ -21,7 +21,7 @@ class ItemFactory extends Factory
             'name' => fake()->name(),
             'description' => fake()->realText(),
             'status' => fake()->randomElement(['not_on_sale', 'on_sale', 'sold']),
-            'selling_price_point' => fake()->randomNumber(5),
+            'selling_price_point' => fake()->numberBetween(100, 1000),
         ];
     }
 }

@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Resources\ItemCollection;
 use App\Http\Resources\ItemResource;
 use App\Models\Item;
+use App\Models\TradeHistory;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use OpenApi\Attributes as OA;
 
 class ItemController extends Controller
@@ -50,5 +53,72 @@ class ItemController extends Controller
             return new ItemResource($item);
         }
         return response(['message' => 'Not found item.'], 404);
+    }
+
+
+    #[OA\Post(
+        path: '/api/items/{item_id}/buy',
+        operationId: 'buyItemById',
+        description: '現在販売中（= status が on_sale）の商品で指定されたIDの商品を、自身の保有するポイントで購入する',
+        tags: ['Item'],
+        parameters: [
+            new OA\Parameter(name: 'item_id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'AOK',
+                content: new OA\JsonContent(ref: 'App\Http\Resources\ItemResource')
+            ),
+        ]
+    )]
+    public function buyItem($id) {
+
+        $item = Item::getPublicItems()->find($id);
+        if(!$item) {
+            return response(['message' => 'Not found item.'], 404);
+        }
+        $seller = User::find($item->seller_user_id);
+        if(!$seller) {
+            return response(['message' => 'Not found Seller user.'], 404);
+        }
+        $buyer = Auth::user();
+
+        if($seller->id == $buyer->id) {
+            // 自分自身の商品は買えない
+            return response(['message' => 'You cannot buy items that you yourself are listing.'], 422);
+        }
+        if($buyer->points < $item->selling_price_point) {
+            // 保有ポイントよりも高い商品は買えない
+            return response(['message' => 'The points you have are not enough to buy the item.'], 422);
+        }
+        if($item->buyer_user_id) {
+            // すでに販売されている商品？ データの不整合が発生しているので、エラーになる
+            return response(['message' => 'Inconsistency will occur in the data. Please contact the administrator.'], 500);
+        }
+
+
+        // 1. 買い手から販売価格を引く
+        $buyer->points = $buyer->points - $item->selling_price_point;
+        $buyer->save();
+
+        // 2. 売り手にポイントを足す
+        $seller->points = $seller->points + $item->selling_price_point;
+        $seller->save();
+
+        // 3. 商品を売約済みにする
+        $item->status = 'sold';
+        $item->buyer_user_id = $buyer->id;
+        $item->save();
+
+        // 4. 購入履歴を登録する
+        TradeHistory::create([
+            'seller_user_id' => $seller->id,
+            'seller_point_result' => $seller->points,
+            'buyer_user_id' => $buyer->id,
+            'buyer_point_result' => $buyer->points,
+            'item_id' => $item->id,
+            'item_point' => $item->selling_price_point,
+        ]);
+
+        return response()->noContent();
     }
 }
