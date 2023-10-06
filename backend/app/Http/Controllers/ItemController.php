@@ -8,6 +8,8 @@ use App\Models\Item;
 use App\Models\TradeHistory;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
 
 class ItemController extends Controller
@@ -96,28 +98,38 @@ class ItemController extends Controller
         }
 
 
-        // 1. 買い手から販売価格を引く
-        $buyer->points = $buyer->points - $item->selling_price_point;
-        $buyer->save();
 
-        // 2. 売り手にポイントを足す
-        $seller->points = $seller->points + $item->selling_price_point;
-        $seller->save();
+        try{
+            DB::beginTransaction();
+            // 1. 買い手から販売価格を引く
+            $buyer->points = $buyer->points - $item->selling_price_point;
+            $buyer->save();
 
-        // 3. 商品を売約済みにする
-        $item->status = 'sold';
-        $item->buyer_user_id = $buyer->id;
-        $item->save();
+            // 2. 売り手にポイントを足す
+            $seller->points = $seller->points + $item->selling_price_point;
+            $seller->save();
 
-        // 4. 購入履歴を登録する
-        TradeHistory::create([
-            'seller_user_id' => $seller->id,
-            'seller_point_result' => $seller->points,
-            'buyer_user_id' => $buyer->id,
-            'buyer_point_result' => $buyer->points,
-            'item_id' => $item->id,
-            'item_point' => $item->selling_price_point,
-        ]);
+            // 3. 商品を売約済みにする
+            $item->status = 'sold';
+            $item->buyer_user_id = $buyer->id;
+            $item->save();
+
+            // 4. 購入履歴を登録する
+            TradeHistory::create([
+                'seller_user_id' => $seller->id,
+                'seller_point_result' => $seller->points,
+                'buyer_user_id' => $buyer->id,
+                'buyer_point_result' => $buyer->points,
+                'item_id' => $item->id,
+                'item_point' => $item->selling_price_point,
+            ]);
+            DB::commit();
+        } catch (\Exception $exception) {
+            Log::error($exception);
+            Log::error('エラーが発生したため、ロールバックを実施');
+            DB::rollBack();
+            return response(['message' => 'An unknown error has occurred. Please contact the administrator.'], 500);
+        }
 
         return response()->noContent();
     }
