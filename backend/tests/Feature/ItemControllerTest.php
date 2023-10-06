@@ -19,6 +19,21 @@ describe('ItemController', function(){
             expect($response->status())->toBe(200);
             expect($response['data'])->toHaveLength(2);
         });
+
+        test('削除された商品は返ってこないこと', function(){
+            $seller = User::factory()->create()->refresh();
+
+            $deleteTargetItem = Item::factory()->create(['status' => 'on_sale', 'seller_user_id' => $seller->id]);
+            Item::factory()->create(['status' => 'on_sale', 'seller_user_id' => $seller->id]);
+            Item::factory()->create(['status' => 'not_on_sale', 'seller_user_id' => $seller->id]);
+            Item::factory()->create(['status' => 'sold', 'seller_user_id' => $seller->id]);
+            $deleteTargetItem->delete();
+
+            $response = $this->get('/api/items');
+            expect($response->status())->toBe(200);
+            expect($response['data'])->toHaveLength(1);
+        });
+
     });
 
     describe('show', function(){
@@ -29,7 +44,7 @@ describe('ItemController', function(){
             $response = $this->get('/api/items/' . $item->id);
 
             expect($response->status())->toBe(200);
-            expect($response['data']['id'])->toBe($item->id);
+            expect($response['id'])->toBe($item->id);
         });
 
         test('指定された商品が存在しない場合、404が返ること', function () {
@@ -48,6 +63,15 @@ describe('ItemController', function(){
             $response = $this->get('/api/items/' . ($item->id));
             expect($response->status())->toBe(404);
             expect($response['message'])->toBe('Not found item.');
+        });
+
+        test('削除された商品は返ってこないこと', function(){
+            $seller = User::factory()->create()->refresh();
+            $item = Item::factory()->create(['status' => 'on_sale', 'seller_user_id' => $seller->id])->refresh();
+            $item->delete();
+
+            $response = $this->get('/api/items/' . $item->id);
+            expect($response->status())->toBe(404);
         });
 
     });

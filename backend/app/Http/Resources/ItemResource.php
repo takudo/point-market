@@ -30,4 +30,5 @@ class ItemResource extends JsonResource
             'status' => $this->status,
         ];
     }
+    public static $wrap = null;
 }

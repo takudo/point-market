@@ -75,7 +75,6 @@
                 "tags": [
                     "MyItem"
                 ],
-                "summary": "Display a listing of the resource.",
                 "description": "自分の登録している商品の一覧を取得する",
                 "operationId": "getMyItems",
                 "responses": {
@@ -93,6 +92,98 @@
                                         }
                                     },
                                     "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "MyItem"
+                ],
+                "operationId": "postMyItem",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MyItemSaveRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "AOK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MyItemResource"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not allowed"
+                    }
+                }
+            }
+        },
+        "/api/my/items/{item_id}": {
+            "delete": {
+                "tags": [
+                    "MyItem"
+                ],
+                "description": "自分が登録した商品の削除",
+                "operationId": "deleteMyItem",
+                "parameters": [
+                    {
+                        "name": "item_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "MyItem"
+                ],
+                "description": "自分が登録した商品の更新",
+                "operationId": "patchMyItem",
+                "parameters": [
+                    {
+                        "name": "item_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MyItemSaveRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "AOK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MyItemResource"
                                 }
                             }
                         }
@@ -171,15 +262,8 @@
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "AOK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/UserRegisterResource"
-                                }
-                            }
-                        }
+                    "204": {
+                        "description": "No content"
                     },
                     "401": {
                         "description": "Not allowed"
@@ -190,6 +274,32 @@
     },
     "components": {
         "schemas": {
+            "MyItemSaveRequest": {
+                "required": [
+                    "name",
+                    "selling_price_point",
+                    "status"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "not_on_sale",
+                            "on_sale"
+                        ]
+                    },
+                    "selling_price_point": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
             "UserLoginPostRequest": {
                 "required": [
                     "email",
@@ -207,10 +317,14 @@
             },
             "UserRegisterPostRequest": {
                 "required": [
+                    "name",
                     "email",
                     "password"
                 ],
                 "properties": {
+                    "name": {
+                        "type": "string"
+                    },
                     "email": {
                         "type": "string"
                     },
@@ -255,15 +369,6 @@
                     },
                     "status": {
                         "description": "状態",
-                        "type": "string"
-                    }
-                },
-                "type": "object"
-            },
-            "UserRegisterResource": {
-                "properties": {
-                    "email_verification_url": {
-                        "description": "メールアドレス確認URL",
                         "type": "string"
                     }
                 },
