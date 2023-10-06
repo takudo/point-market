@@ -28,8 +28,10 @@ class MyItemResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'status' => $this->status,
+            'selling_price_point' => $this->selling_price_point,
             'seller_user_id' => $this->seller_user_id,
             'buyer_user_id' => $this->buyer_user_id,
         ];
     }
+    public static $wrap = null;
 }
