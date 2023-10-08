@@ -173,6 +173,20 @@ describe('MyItemController', function(){
             expect($response->status())->toBe(404);
         });
 
+        test('売約済みの商品は、変更できないこと（エラーになること）', function(){
+            $me = User::factory()->create()->refresh();
+            $other = User::factory()->create()->refresh();
+            $item = Item::factory()->create(['status' => 'sold', 'seller_user_id' => $me->id, 'buyer_user_id' => $other->id])->refresh();
+
+            $response = $this->actingAs($me)
+                ->patchJson('/api/my/items/' . $item->id, [
+                    'name' => $item->name . '_update',
+                    'status' => 'not_on_sale',
+                    'description' => $item->description . '_update',
+                    'selling_price_point' => $item->selling_price_point + 100,
+                ]);
+            expect($response->status())->toBe(404);
+        });
     });
     describe('destroy', function(){
         test('指定した商品が削除できること', function(){
@@ -195,6 +209,16 @@ describe('MyItemController', function(){
             $response = $this->actingAs($me)
                 ->delete('/api/my/items/' . $item->id, );
 
+            expect($response->status())->toBe(404);
+        });
+
+        test('売約済みの商品は、削除できないこと（エラーになること）', function(){
+            $me = User::factory()->create()->refresh();
+            $other = User::factory()->create()->refresh();
+            $item = Item::factory()->create(['status' => 'sold', 'seller_user_id' => $me->id, 'buyer_user_id' => $other->id])->refresh();
+
+            $response = $this->actingAs($me)
+                ->delete('/api/my/items/' . $item->id,);
             expect($response->status())->toBe(404);
         });
     });
