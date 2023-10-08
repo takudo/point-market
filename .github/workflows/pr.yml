@@ -37,12 +37,14 @@ jobs:
         env:
           DB_CONNECTION: mysql
           DB_HOST: 127.0.0.1
-          DB_USER_NAME: actions
+          DB_USERNAME: root
+          DB_PASSWORD:
         run: php artisan test tests/Feature
 
       - name: Execute tests FeatureSeparate
         env:
           DB_CONNECTION: mysql
           DB_HOST: 127.0.0.1
-          DB_USER_NAME: actions
+          DB_USERNAME: root
+          DB_PASSWORD:
         run: php artisan test tests/FeatureSeparate
