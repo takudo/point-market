@@ -1,6 +1,10 @@
 <?php
 
 use App\Models\User;
+use App\Providers\RouteServiceProvider;
+use Illuminate\Auth\Events\Verified;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\URL;
 
 describe('UserController', function() {
 
@@ -96,6 +100,49 @@ describe('UserController', function() {
             ]);
 
             expect($response->status())->toBe(204);
+        });
+    });
+
+    describe('verifyEmail', function(){
+        test('メールアドレス認証ができること。', function () {
+            $user = User::factory()->create([
+                'email_verified_at' => null,
+                'points' => 0
+            ]);
+
+            Event::fake();
+
+            $verificationUrl = URL::temporarySignedRoute(
+                'verification.verify',
+                now()->addMinutes(60),
+                ['id' => $user->id, 'hash' => sha1($user->email)]
+            );
+
+            $response = $this->actingAs($user)->get($verificationUrl);
+
+            Event::assertDispatched(Verified::class);
+            expect($user->refresh()->hasVerifiedEmail())->toBeTrue();
+            expect($response->status())->toBe(200);
+            expect($response['message'])->toBe('Email verification is done.');
+
+            // ポイントの付与もされていること
+            expect($user['points'])->toBe(10000);
+        });
+
+        test('不正なハッシュ値の場合、メールアドレス認証に失敗すること', function () {
+            $user = User::factory()->create([
+                'email_verified_at' => null,
+            ]);
+
+            $verificationUrl = URL::temporarySignedRoute(
+                'verification.verify',
+                now()->addMinutes(60),
+                ['id' => $user->id, 'hash' => sha1('wrong-email')]
+            );
+
+            $this->actingAs($user)->get($verificationUrl);
+
+            expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
         });
     });
 });
