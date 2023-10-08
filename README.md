@@ -9,7 +9,11 @@
 - 以下を前提を満たす端末にて実施
 
 ```shell
+$ git clone git@github.com:takudo/point-market.git
+$ cd point-market
+$ cp backend/.env.example backend/.env
 $ docker-compose up
+$ docker-compose exec backend php artisan key:generate
 $ docker-compose exec backend php artisan migrate
 $ docker-compose exec backend php artisan db:seed
 ```
@@ -90,3 +94,9 @@ $ docker-compose exec backen php artisan tests/FeatureSeparate/XxxTest.php # こ
 
 - クラスメソッドのモッキングを実施している箇所があるが、これが影響範囲が大きいらしく、他のテストと一緒に混ぜて実行すると、他のテストが落ちる状況が発生した。
 - `@runInSeparateProcess`,`@preserveGlobalState` のアノテーションで回避できるとのことだったが、手元ではうまく動作しないことと、こちらが[動いたとしても不安定](https://tsuyoshi-nakamura.hatenablog.com/entry/2017/11/15/190852)だという情報もあったため、一括実行とは別で単品で実行する形に切り出した。
+
+### CI
+
+- github actions で、PullRequest 時にテストの自動実行をするよう設定済み
+  - [実行履歴](https://github.com/takudo/point-market/actions)
+- 今回設定済みなのはテストの自動実行のみだが、ソースやdockerイメージのビルドをして本番環境へのデプロイまでやるケースが多い
