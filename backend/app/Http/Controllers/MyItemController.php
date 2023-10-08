@@ -94,6 +94,9 @@ class MyItemController extends Controller
         if(!$item or $item->seller_user_id != $me->id) {
             return (new ErrorResource(['message' => 'Not found Item.']))->response()->setStatusCode(404);
         }
+        if($item->status == 'sold' || $item->buyer_user_id) {
+            return (new ErrorResource(['message' => 'Not found Item.']))->response()->setStatusCode(404);
+        }
 
         $item->name = $request->name;
         $item->description = $request->description;
@@ -126,6 +129,10 @@ class MyItemController extends Controller
         if(!$item or $item->seller_user_id != $me->id) {
             return (new ErrorResource(['message' => 'Not found Item.']))->response()->setStatusCode(404);
         }
+        if($item->status == 'sold' || $item->buyer_user_id) {
+            return (new ErrorResource(['message' => 'Not found Item.']))->response()->setStatusCode(404);
+        }
+
         $item->delete();
 
         return response()->noContent();
