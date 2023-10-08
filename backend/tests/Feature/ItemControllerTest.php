@@ -167,11 +167,6 @@ describe('ItemController', function(){
             expect($history->item_point)->toBe(1000);
         });
 
-//        test('途中でエラーが起きた場合、書き込まれたデータはロールバックする',
-//
-//            function () {
-//
-//        });
     });
 });
 

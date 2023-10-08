@@ -74,45 +74,54 @@ class ItemController extends Controller
     )]
     public function buyItem($id) {
 
-        $item = Item::getPublicItems()->find($id);
-        if(!$item) {
-            return response(['message' => 'Not found item.'], 404);
-        }
-        $seller = User::find($item->seller_user_id);
-        if(!$seller) {
-            return response(['message' => 'Not found Seller user.'], 404);
-        }
-        $buyer = Auth::user();
-
-        if($seller->id == $buyer->id) {
-            // 自分自身の商品は買えない
-            return response(['message' => 'You cannot buy items that you yourself are listing.'], 422);
-        }
-        if($buyer->points < $item->selling_price_point) {
-            // 保有ポイントよりも高い商品は買えない
-            return response(['message' => 'The points you have are not enough to buy the item.'], 422);
-        }
-        if($item->buyer_user_id) {
-            // すでに販売されている商品？ データの不整合が発生しているので、エラーになる
-            return response(['message' => 'Inconsistency will occur in the data. Please contact the administrator.'], 500);
-        }
-
-
-
         try{
             DB::beginTransaction();
-            // 1. 買い手から販売価格を引く
-            $buyer->points = $buyer->points - $item->selling_price_point;
-            $buyer->save();
+
+            $item = Item::getPublicItems()->find($id);
+            if(!$item) {
+                DB::rollBack();
+                return response(['message' => 'Not found item.'], 404);
+            }
+            $item = Item::lockForUpdate()->find($item->id); //ロック取得
+
+            $seller = User::lockForUpdate()->find($item->seller_user_id); //ロック取得
+            if(!$seller) {
+                DB::rollBack();
+                return response(['message' => 'Not found Seller user.'], 404);
+            }
+
+            $buyer = Auth::user();
+            $buyer = User::lockForUpdate()->find($buyer->id); //ロック取得
+            if($seller->id == $buyer->id) {
+                // 自分自身の商品は買えない
+                DB::rollBack();
+                return response(['message' => 'You cannot buy items that you yourself are listing.'], 422);
+            }
+
+            if($buyer->points < $item->selling_price_point) {
+                // 保有ポイントよりも高い商品は買えない
+                DB::rollBack();
+                return response(['message' => 'The points you have are not enough to buy the item.'], 422);
+            }
+
+            if($item->buyer_user_id || $item->status == 'sold') {
+                // すでに売約済みの商品。ロック待ちで発生しうる
+                DB::rollBack();
+                return response(['message' => 'Inconsistency will occur in the data. Please contact the administrator.'], 500);
+            }
+
+            // 1. 商品を売約済みにする
+            $item->status = 'sold';
+            $item->buyer_user_id = $buyer->id;
+            $item->save();
 
             // 2. 売り手にポイントを足す
             $seller->points = $seller->points + $item->selling_price_point;
             $seller->save();
 
-            // 3. 商品を売約済みにする
-            $item->status = 'sold';
-            $item->buyer_user_id = $buyer->id;
-            $item->save();
+            // 3. 買い手から販売価格を引く
+            $buyer->points = $buyer->points - $item->selling_price_point;
+            $buyer->save();
 
             // 4. 購入履歴を登録する
             TradeHistory::create([
@@ -128,7 +137,7 @@ class ItemController extends Controller
             Log::error($exception);
             Log::error('エラーが発生したため、ロールバックを実施');
             DB::rollBack();
-            return response(['message' => 'An unknown error has occurred. Please contact the administrator.'], 500);
+            return response(['message' => 'An unknown error has occurred. Please try the same operation again or contact the administrator.'], 500);
         }
 
         return response()->noContent();

@@ -7,20 +7,12 @@ use App\Models\User;
 use Mockery;
 use Tests\TestCase;
 
-//describe('ItemController', function(){
-//
-//    describe('buyItem', function(){
-//        test('途中でエラーが起きた場合、書き込まれたデータはロールバックする', function(){
-//
-//        });
-//    });
-//});
-
-class ItemControllerTest extends TestCase
+class BuyingItemTransactionRollbackTest extends TestCase
 {
     public function test_buy_item_transaction_rollback(): void
     {
         // TradeHistory を モッキング
+        // -> TradeHistory の Insert がトランザクション中の途中で実施されるため、そこで無理やりエラーを発生させる
         Mockery::mock('alias:App\Models\TradeHistory')
             ->shouldReceive('create')
             ->andThrow('Exception');
