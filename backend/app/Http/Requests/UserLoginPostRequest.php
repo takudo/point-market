@@ -8,8 +8,8 @@ use OpenApi\Attributes as OA;
 #[OA\Schema(
     required: ['email', 'password'],
     properties: [
-        new OA\Property('email', type: 'string'),
-        new OA\Property('password', type: 'string'),
+        new OA\Property('email', type: 'string', example: 'test-user@point-market.jp'),
+        new OA\Property('password', type: 'string', example: 'password'),
     ]
 )]
 class UserLoginPostRequest extends FormRequest

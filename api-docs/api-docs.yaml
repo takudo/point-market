@@ -215,8 +215,10 @@ components:
       properties:
         email:
           type: string
+          example: test-user@point-market.jp
         password:
           type: string
+          example: password
       type: object
     UserRegisterPostRequest:
       required:
