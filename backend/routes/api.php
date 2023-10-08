@@ -29,25 +29,9 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get('/users/me', [UserController::class, 'me']);
 
     Route::resource('my/items', MyItemController::class);
+
+    Route::post('items/{id}/buy', [ItemController::class, 'buyItem']);
 });
 
 Route::resource('items', ItemController::class, ['only' => ['index', 'show']]);
 
-// Notes: 以下参考用に Laravel Breeze が自動生成した Route
-//Route::post('/users/register', [UserController::class, 'store'])
-//    ->middleware('guest')
-//    ->name('register');
-//
-//Route::post('/login', [AuthenticatedSessionController::class, 'store'])
-//    ->middleware('guest')
-//    ->name('login');
-//Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
-//                ->middleware('guest')
-//                ->name('password.email');
-//
-//Route::post('/reset-password', [NewPasswordController::class, 'store'])
-//                ->middleware('guest')
-//                ->name('password.store');
-//Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
-//    ->middleware(['auth', 'throttle:6,1'])
-//    ->name('verification.send');
