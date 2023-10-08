@@ -17,6 +17,8 @@ $ docker-compose exec laravel composer install
 $ docker-compose exec laravel php artisan key:generate
 $ docker-compose exec laravel php artisan migrate
 $ docker-compose exec laravel php artisan db:seed
+[一度 docker-compose を止める]
+$ docker-compose up #再起動
 ```
 
 ### Swagger UI で動作確認する
@@ -29,6 +31,9 @@ $ docker-compose exec laravel php artisan db:seed
   - email: `test-user@point-market.jp`
   - password: `password`
   - ※シードで作成されたデータ
+
+<img src="_README/swagger1.jpg" width="600px">
+<img src="_README/swagger2.jpg" width="600px">
 
 - ログイン後、認証が必要なAPIも叩けるようになる
 
