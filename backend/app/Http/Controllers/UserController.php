@@ -105,6 +105,6 @@ class UserController extends Controller
             $user->points = 10000;
             $user->save();
         }
-        return response(['message' => 'Email verification done.'], 200);
+        return response(['message' => 'Email verification is done.'], 200);
     }
 }
