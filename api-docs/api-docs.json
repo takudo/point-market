@@ -338,10 +338,12 @@
                 ],
                 "properties": {
                     "email": {
-                        "type": "string"
+                        "type": "string",
+                        "example": "test-user@point-market.jp"
                     },
                     "password": {
-                        "type": "string"
+                        "type": "string",
+                        "example": "password"
                     }
                 },
                 "type": "object"

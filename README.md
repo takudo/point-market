@@ -13,9 +13,10 @@ $ git clone git@github.com:takudo/point-market.git
 $ cd point-market
 $ cp backend/.env.example backend/.env
 $ docker-compose up
-$ docker-compose exec backend php artisan key:generate
-$ docker-compose exec backend php artisan migrate
-$ docker-compose exec backend php artisan db:seed
+$ docker-compose exec laravel composer install
+$ docker-compose exec laravel php artisan key:generate
+$ docker-compose exec laravel php artisan migrate
+$ docker-compose exec laravel php artisan db:seed
 ```
 
 ### Swagger UI で動作確認する
@@ -34,8 +35,8 @@ $ docker-compose exec backend php artisan db:seed
 ### 自動テスト
 
 ```shell
-$ docker-compose exec backen php artisan tests/Feature # Feature 配下のテストを実行
-$ docker-compose exec backen php artisan tests/FeatureSeparate/XxxTest.php # こちらの配下のテストはモックライブラリの影響で分割実行しないと動かないので注意
+$ docker-compose exec laravel php artisan tests/Feature # Feature 配下のテストを実行
+$ docker-compose exec laravel php artisan tests/FeatureSeparate/XxxTest.php # こちらの配下のテストはモックライブラリの影響で分割実行しないと動かないので注意
 ```
 
 
