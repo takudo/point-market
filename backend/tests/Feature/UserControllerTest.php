@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\User;
-use App\Providers\RouteServiceProvider;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
@@ -32,64 +31,87 @@ describe('UserController', function() {
             $this->assertGuest();
         });
 
+        test('メールアドレス未認証状態のときには、ログインに失敗すること', function () {
+
+            $email = 'hogetest@gmail.com';
+            $password = '!Q4QS$jirKf@QSEQ';
+
+            $response = $this->postJson('/api/users/register', [
+                'name' => 'hoge',
+                'email' => $email,
+                'password' => $password
+            ]);
+
+            $response = $this->postJson('/api/login', [
+                'email' => $email,
+                'password' => $password,
+            ]);
+
+            expect($response->status())->toBe(403);
+        });
+
+
     });
 
     describe('store', function () {
-        test('メールアドレス以外の形式ではエラーになること', function () {
 
-            $response = $this->postJson('/api/users/register', [
+        function _testUserRegister($context, $email = 'test@gmail.com', $password = '!Q4QS$jirKf@QSEQ', $expectedStatus = 200, $expectedMessage = 'OK'){
+            $response = $context->postJson('/api/users/register', [
                 'name' => 'hoge',
-                'email' => 'incorrect-format-email',
-                'password' => '!Q4QS$jirKf@QSEQ'
+                'email' => $email,
+                'password' => $password
             ]);
 
-            expect($response->status())->toBe(422);
-            expect($response['message'])->toBe('The email field must be a valid email address.');
+            expect($response->status())->toBe($expectedStatus);
+            expect($response['message'])->toBe($expectedMessage);
+        };
+
+        test('メールアドレス以外の形式ではエラーになること', function () {
+            _testUserRegister(
+                context: $this,
+                email: 'incorrect-format-email',
+                expectedStatus: 422,
+                expectedMessage: 'The email field must be a valid email address.'
+            );
         });
         test('登録済みのメールアドレスではエラーになること', function () {
-
             $duplicateEmail = 'test@gmail.com';
             User::factory()->create(['email' => $duplicateEmail]);
 
-            $response = $this->postJson('/api/users/register', [
-                'name' => 'hoge',
-                'email' => $duplicateEmail,
-                'password' => '!Q4QS$jirKf@QSEQ'
-            ]);
-
-            expect($response->status())->toBe(422);
-            expect($response['message'])->toBe('The email has already been taken.');
+            _testUserRegister( context: $this,
+                email: $duplicateEmail,
+                expectedStatus: 422,
+                expectedMessage: 'The email has already been taken.'
+            );
         });
-        test('パスワードルールに即していないものはエラーになること', function () {
 
-            $baseRequest = [
-                'name' => 'hoge',
-                'email' => 'test@gmail.com',
-            ];
-
-            // 小文字のみ
-            $baseRequest['password'] = 'aaaaaaaaa';
-            $response = $this->postJson('/api/users/register', $baseRequest);
-            expect($response->status())->toBe(422);
-            expect($response['message'])->toBe('The password field must contain at least one uppercase and one lowercase letter.');
-
-            // 小文字と大文字
-            $baseRequest['password'] = 'aaaaaaaaaA';
-            $response = $this->postJson('/api/users/register', $baseRequest);
-            expect($response->status())->toBe(422);
-            expect($response['message'])->toBe('The password field must contain at least one symbol.');
-
-            // 小文字、大文字、記号
-            $baseRequest['password'] = 'aaaaaaaaaA!';
-            $response = $this->postJson('/api/users/register', $baseRequest);
-            expect($response->status())->toBe(422);
-            expect($response['message'])->toBe('The password field must contain at least one number.');
-
-            // 小文字、大文字、記号、数字で、簡単なパスワード
-            $baseRequest['password'] = 'Password!1';
-            $response = $this->postJson('/api/users/register', $baseRequest);
-            expect($response->status())->toBe(422);
-            expect($response['message'])->toBe('The given password has appeared in a data leak. Please choose a different password.');
+        test('パスワードルールに即していない（小文字のみ）場合はエラーになること', function(){
+            _testUserRegister( context: $this,
+                password: 'abcdefghijklmo',
+                expectedStatus: 422,
+                expectedMessage: 'The password field must contain at least one uppercase and one lowercase letter.'
+            );
+        });
+        test('パスワードルールに即していない（小文字・大文字）場合はエラーになること', function(){
+            _testUserRegister( context: $this,
+                password: 'abcdefghijklmoABC',
+                expectedStatus: 422,
+                expectedMessage: 'The password field must contain at least one symbol.'
+            );
+        });
+        test('パスワードルールに即していない（小文字・大文字・記号）場合はエラーになること', function(){
+            _testUserRegister( context: $this,
+                password: 'abcdefghijklmoABC!',
+                expectedStatus: 422,
+                expectedMessage: 'The password field must contain at least one number.'
+            );
+        });
+        test('パスワードルールに即していない（小文字、大文字、記号、数字で、簡単なパスワード）場合はエラーになること', function(){
+            _testUserRegister( context: $this,
+                password: 'Password!1',
+                expectedStatus: 422,
+                expectedMessage: 'The given password has appeared in a data leak. Please choose a different password.'
+            );
         });
 
         test('登録の条件を満たす場合、登録できること', function () {

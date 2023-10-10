@@ -7,6 +7,7 @@ use App\Http\Requests\UserRegisterPostRequest;
 use App\Http\Resources\UserRegisterResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use http\Env\Response;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
@@ -31,17 +32,17 @@ class UserController extends Controller
     )]
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+        $credentials = ['email' => $request->email, 'password' => $request->password];
 
-        if (Auth::attempt($credentials)) {
+        if (Auth::attempt($credentials) && $user = Auth::user()) {
+            if(!$user->hasVerifiedEmail()) {
+                return response()->json(['message' => 'Your email address is not verified.'], 403);
+            }
             $request->session()->regenerate();
-            return new UserResource(Auth::user());
+            return new UserResource($user);
         }
 
-        return response()->json([], 401);
+        return response()->json(['message' => 'Email and/or password are incorrect.'], 401);
     }
 
     #[OA\Get(

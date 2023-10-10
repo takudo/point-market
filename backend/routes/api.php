@@ -25,7 +25,7 @@ Route::get('/verify-email/{id}/{hash}', [UserController::class, 'verifyEmail'])
     ->name('verification.verify');
 Route::post('/login', [UserController::class, 'login']);
 
-Route::middleware('auth:sanctum')->group(function() {
+Route::middleware(['auth:sanctum', 'verified'])->group(function() {
     Route::get('/users/me', [UserController::class, 'me']);
 
     Route::resource('my/items', MyItemController::class);

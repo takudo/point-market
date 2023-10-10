@@ -28,4 +28,5 @@ class UserResource extends JsonResource
             'points' => $this->points,
         ];
     }
+    public static $wrap = null;
 }
