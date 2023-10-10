@@ -13,7 +13,7 @@ use OpenApi\Attributes as OA;
 #[OA\OpenApi(
     info: new OA\Info(title: "PointMarket Backend API", version: "0.1",),
     servers: [
-        new OA\Server(url: "http://localhost")
+        new OA\Server(url:L5_SWAGGER_CONST_HOST)
     ],
 )]
 class OpenApi {}
