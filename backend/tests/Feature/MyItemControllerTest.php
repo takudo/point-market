@@ -2,14 +2,18 @@
 
 use App\Models\Item;
 use App\Models\User;
+require_once '_commonTests.php';
 
 describe('MyItemController', function(){
     describe('index', function(){
 
         test('未認証状態では 401が返ること', function () {
             $response = $this->get('/api/my/items');
-
             expect($response->status())->toBe(401);
+        });
+
+        test('email 未認証のユーザーでは 403が返ること', function () {
+            emailUnverified($this,'get', '/api/my/items');
         });
 
         test('自分の登録した商品のみが返ってくること', function () {
