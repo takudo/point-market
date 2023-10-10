@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
         $user = \App\Models\User::factory()->create(['id' => 1, 'email' => 'test-user@point-market.jp']);
 
         \App\Models\Item::factory(['seller_user_id' => $user->id])
-            ->count(10)
+            ->count(1000)
             ->create();
     }
 }

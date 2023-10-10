@@ -19,7 +19,7 @@ class Item extends Model
         'buyer_user_id',
     ];
 
-    public static function getPublicItems() {
-        return Item::where('status', 'on_sale')->get();
+    public static function publicItems() {
+        return Item::where('status', 'on_sale');
     }
 }
