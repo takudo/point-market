@@ -96,7 +96,7 @@ class BuyingItemDeadlockAvoidanceTest extends TestCase
         try{
             DB::beginTransaction();
 
-            $item = Item::getPublicItems()->find($itemId);
+            $item = Item::publicItems()->find($itemId);
             if(!$item) {
                 DB::rollBack();
                 return;

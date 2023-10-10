@@ -19,6 +19,9 @@ class ItemController extends Controller
         operationId: 'getItems',
         description: '現在販売中（= status が on_sale）の商品の一覧を取得する',
         tags: ['Item'],
+        parameters: [
+            new OA\Parameter(name: 'page', in: 'query', required: false, schema: new OA\Schema(type: 'integer'))
+        ],
         responses: [
             new OA\Response(response: 200, description: 'AOK',
                 content: new OA\JsonContent(
@@ -31,7 +34,7 @@ class ItemController extends Controller
     )]
     public function index()
     {
-        return new ItemCollection(Item::getPublicItems());
+        return new ItemCollection(Item::publicItems()->paginate(100));
     }
 
     #[OA\Get(
@@ -50,7 +53,7 @@ class ItemController extends Controller
     )]
     public function show($id)
     {
-        $item = Item::getPublicItems()->find($id);
+        $item = Item::publicItems()->find($id);
         if($item) {
             return new ItemResource($item);
         }
@@ -77,7 +80,7 @@ class ItemController extends Controller
         try{
             DB::beginTransaction();
 
-            $item = Item::getPublicItems()->find($id);
+            $item = Item::publicItems()->find($id);
             if(!$item) {
                 DB::rollBack();
                 return response(['message' => 'Not found item.'], 404);

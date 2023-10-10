@@ -18,4 +18,10 @@ class MyItemCollection extends ResourceCollection
             'data' => $this->collection,
         ];
     }
+
+    public function paginationInformation($request, $paginated, $default)
+    {
+        unset($default['meta']['links']);
+        return $default;
+    }
 }

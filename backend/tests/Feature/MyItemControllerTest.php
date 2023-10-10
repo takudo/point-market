@@ -35,7 +35,9 @@ describe('MyItemController', function(){
             expect($response->status())->toBe(200);
             expect($response['data'])->toHaveLength(4);
 
-            foreach($response['data'] as $item) {
+            foreach($response['data'] as $itemResponse) {
+//                expect($item['seller_user_id'])->toBe($me->id);
+                $item = Item::find($itemResponse['id']);
                 expect($item['seller_user_id'])->toBe($me->id);
             }
         });

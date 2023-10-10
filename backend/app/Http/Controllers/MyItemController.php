@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\MyItemSaveRequest;
 use App\Http\Resources\ErrorResource;
+use App\Http\Resources\ItemCollection;
 use App\Http\Resources\MyItemCollection;
 use App\Http\Resources\MyItemResource;
 use App\Models\Item;
@@ -18,6 +19,9 @@ class MyItemController extends Controller
         operationId: 'getMyItems',
         description: '自分の登録している商品の一覧を取得する',
         tags: ['MyItem'],
+        parameters: [
+            new OA\Parameter(name: 'page', in: 'query', required: false, schema: new OA\Schema(type: 'integer'))
+        ],
         responses: [
             new OA\Response(response: 200, description: 'AOK',
                 content: new OA\JsonContent(
@@ -31,7 +35,7 @@ class MyItemController extends Controller
     public function index()
     {
         $me = Auth::user();
-        return new MyItemCollection(Item::where('seller_user_id', $me->id)->get());
+        return new MyItemCollection(Item::where('seller_user_id', $me->id)->paginate(100));
     }
 
     #[OA\Post(

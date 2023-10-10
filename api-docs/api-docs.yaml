@@ -12,6 +12,13 @@ paths:
         - Item
       description: '現在販売中（= status が on_sale）の商品の一覧を取得する'
       operationId: getItems
+      parameters:
+        -
+          name: page
+          in: query
+          required: false
+          schema:
+            type: integer
       responses:
         200:
           description: AOK
@@ -70,6 +77,13 @@ paths:
         - MyItem
       description: 自分の登録している商品の一覧を取得する
       operationId: getMyItems
+      parameters:
+        -
+          name: page
+          in: query
+          required: false
+          schema:
+            type: integer
       responses:
         200:
           description: AOK
@@ -246,6 +260,18 @@ components:
         status:
           description: 状態
           type: string
+        selling_price_point:
+          description: 販売価格（ポイント）
+          type: integer
+        seller_user_id:
+          description: 販売しているユーザーのID
+          type: integer
+        created_at:
+          description: 登録日時
+          type: string
+        updated_at:
+          description: 最終更新日時
+          type: string
       type: object
     MyItemResource:
       properties:
@@ -259,6 +285,18 @@ components:
           type: string
         status:
           description: 状態
+          type: string
+        selling_price_point:
+          description: 販売価格（ポイント）
+          type: integer
+        buyer_user_id:
+          description: 購入したユーザーのID
+          type: integer
+        created_at:
+          description: 登録日時
+          type: string
+        updated_at:
+          description: 最終更新日時
           type: string
       type: object
     UserResource:
