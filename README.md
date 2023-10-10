@@ -39,9 +39,25 @@ $ docker-compose up #再起動
 
 ```shell
 $ docker-compose exec laravel php artisan tests/Feature # Feature 配下のテストを実行
-$ docker-compose exec laravel php artisan tests/FeatureSeparate/XxxTest.php # こちらの配下のテストはモックライブラリの影響で分割実行しないと動かないので注意
 ```
 
+排他制御の関連で、特殊な自動テストをいくつか実装している。
+必ず1ファイルずつ実行すること
+
+```shell
+$ docker-compose exec -e DB_DATABASE=testing laravel php artisan migrate:refresh
+$ docker-compose exec laravel php artisan tests/FeatureSeparate/BuyingItemTransactionRollbackTest.php #購買処理の途中で落ちた場合の、ロールバックのテスト
+```
+
+```shell
+$ docker-compose exec -e DB_DATABASE=testing laravel php artisan migrate:refresh
+$ docker-compose exec laravel php artisan tests/FeatureSeparate/BuyingItemDeadlockTest.php # 実装済みの処理順と異なるが、プログラム的にデッドロックを起こして検知するテスト
+```
+
+```shell
+$ docker-compose exec -e DB_DATABASE=testing laravel php artisan migrate:refresh
+$ docker-compose exec laravel php artisan tests/FeatureSeparate/BuyingItemDeadlockAvoidanceTest.php # 実装済みの処理順で、デッドロックが起きないか・排他制御がうまくいっていることを確認するテスト
+```
 
 ---
 
@@ -54,6 +70,7 @@ $ docker-compose exec laravel php artisan tests/FeatureSeparate/XxxTest.php # �
     - 一方、今回の処理対象は、システム内部で扱うデータのみだったためMySQLのトランザクションで対処可能と思われるが、実際には外部の決済サービスなどとのつなぎ込みによって、トランザクション処理はより複雑になることが想定される （参考記事: [Mercari マイクロサービスにおける決済トランザクション管理](https://engineering.mercari.com/blog/entry/2019-06-07-155849/)）
 
 - MySQL の利用の前提に立つと、以下のようなデッドロックの発生が仮定できる
+  - メモ: 以下の図のデッドロックをプログラム的に実装しているのが、 `backend/tests/FeatureSeparate/BuyingItemDeadlockTest.php` である
 
 ![デッドロック](./_README/deadlock1.png)
 
@@ -69,11 +86,21 @@ $ docker-compose exec laravel php artisan tests/FeatureSeparate/XxxTest.php # �
 
 ![デッドロック](./_README/deadlock3.png)
 
+また、この処理が意図通りになっているかどうかをテストしているのが `backend/tests/FeatureSeparate/BuyingItemDeadlockAvoidanceTest.php` である
+
 #### 排他制御のテスト
 
-- FIXME PHP において デッドロックを起こすための並列処理を簡単に書くことが難しいため、自動テストは書き起こしていない
-  - 参考記事
-    - https://qiita.com/kuinaein/items/0b70e40947085560b34e
+- PHP において 並列処理・非同期を簡単に書くことが難しいため、特殊な実装を行っている
+- 以下試したことを羅列する
+  - Laravel の標準機能として Job という非同期処理がある
+    - これは キューイングのためのDBがロックしてしまい、意図通りのテストを実装することができなかった
+  - PHP Fiber という機能
+    - これは[完全な非同期処理ではないらしく](https://tech-blog.rakus.co.jp/entry/20210915/php#Fibers) 処理順が意図通りになることが確認できなかった
+  - `pcntl_fork` による子プロセス生成
+    - 最終的にはこちらの処理に任せることとした。
+- 参考記事
+  - https://qiita.com/kuinaein/items/0b70e40947085560b34e
+  - https://feeld-uni.com/?p=2463
 
 
 ### 認証
