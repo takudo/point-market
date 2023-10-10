@@ -5,7 +5,7 @@
 前提
 - dockerがインストール済
 
-手順
+手順（ローカル環境で動かす場合）
 
 ```shell
 $ git clone git@github.com:takudo/point-market.git
@@ -19,6 +19,8 @@ $ docker-compose exec laravel php artisan db:seed
 [一度 docker-compose を止める]
 $ docker-compose up #再起動
 ```
+
+オプション: local以外の環境で動かしている場合（github codespacesなど）、 `backend/.env` ファイルの、 `L5_SWAGGER_CONST_HOST` を適切な値に編集する
 
 ### Swagger UI で動作確認する
 
