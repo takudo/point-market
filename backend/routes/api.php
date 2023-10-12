@@ -16,22 +16,24 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+Route::middleware(['json_unescape_unicode'])->group(function(){
+    Route::get('health', HealthCheckController::class);
 
-Route::get('health', HealthCheckController::class);
+    Route::post('/users/register', [UserController::class, 'store']);
+    Route::get('/verify-email/{id}/{hash}', [UserController::class, 'verifyEmail'])
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('verification.verify');
+    Route::post('/login', [UserController::class, 'login']);
 
-Route::post('/users/register', [UserController::class, 'store']);
-Route::get('/verify-email/{id}/{hash}', [UserController::class, 'verifyEmail'])
-    ->middleware(['signed', 'throttle:6,1'])
-    ->name('verification.verify');
-Route::post('/login', [UserController::class, 'login']);
+    Route::middleware(['auth:sanctum', 'verified'])->group(function() {
+        Route::get('/users/me', [UserController::class, 'me']);
 
-Route::middleware(['auth:sanctum', 'verified'])->group(function() {
-    Route::get('/users/me', [UserController::class, 'me']);
+        Route::resource('my/items', MyItemController::class);
 
-    Route::resource('my/items', MyItemController::class);
+        Route::post('items/{id}/buy', [ItemController::class, 'buyItem']);
+    });
 
-    Route::post('items/{id}/buy', [ItemController::class, 'buyItem']);
+    Route::resource('items', ItemController::class, ['only' => ['index', 'show']]);
+
 });
-
-Route::resource('items', ItemController::class, ['only' => ['index', 'show']]);
 
