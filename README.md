@@ -119,7 +119,11 @@ $ docker-compose exec laravel php artisan tests/FeatureSeparate/BuyingItemDeadlo
 ### 認証
 
 - [laravel sanctum の SPA認証](https://readouble.com/laravel/10.x/ja/sanctum.html#spa-authentication) を利用
-  - FIXME [SPA認証を選んでいる理由を解説]
+- `sanctum` は APIトークンの認証方式と、 SPA認証の方式を提供しているが、今回はSPA認証の方式を取っている。
+- API トークンはシンプルな機能であるがゆえに、例えば以下のような点で、自前で設計・実装する必要がある部分がある。
+  - フロントエンドでどのようにトークンを保持するか？ => セキュアなのは cookie ベースでの保存となるが、そうすると、cookieベースであるSPA認証とやることがあまり変わらなくなる
+  - バックエンド側でどのようにトークンを保持するか？
+- swagger UI（ブラウザ）においては SPA認証の方式が簡単に使えるため、今回はこの形を取っている
 
 ### OpenAPI 定義の出力（および、swagger ui）
 
