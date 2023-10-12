@@ -24,6 +24,7 @@ Route::middleware(['json_unescape_unicode'])->group(function(){
         ->middleware(['signed', 'throttle:6,1'])
         ->name('verification.verify');
     Route::post('/login', [UserController::class, 'login']);
+    Route::delete('/logout', [UserController::class, 'logout']);
 
     Route::middleware(['auth:sanctum', 'verified'])->group(function() {
         Route::get('/users/me', [UserController::class, 'me']);

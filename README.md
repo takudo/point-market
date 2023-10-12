@@ -5,13 +5,14 @@
 前提
 - dockerがインストール済
 
-手順
+手順（ローカル環境で動かす場合）
 
 ```shell
 $ git clone git@github.com:takudo/point-market.git
 $ cd point-market
 $ cp backend/.env.example backend/.env
 $ docker-compose up
+[以下、別ターミナルなどで実施]
 $ docker-compose exec laravel composer install
 $ docker-compose exec laravel php artisan key:generate
 $ docker-compose exec laravel php artisan migrate
@@ -19,6 +20,8 @@ $ docker-compose exec laravel php artisan db:seed
 [一度 docker-compose を止める]
 $ docker-compose up #再起動
 ```
+
+オプション: local以外の環境で動かしている場合（github codespacesなど）、 `backend/.env` ファイルの、 `L5_SWAGGER_CONST_HOST` を適切な値に編集する
 
 ### Swagger UI で動作確認する
 
@@ -34,6 +37,16 @@ $ docker-compose up #再起動
 <img src="_README/swagger2.jpg" width="600px">
 
 - ログイン後、Swagger UI にて、他の認証が必要なAPIも叩けるようになる
+
+### ユーザー登録のメール確認
+
+`mailpit` が 8025 ポートで立ち上がっているので、ユーザー仮登録時にはそちらでメール認証が可能。
+
+<img src="_README/user_register1.jpg" width="600px">
+
+`mailpit` の画面イメージ
+
+<img src="_README/user_register2.jpg" width="600px">
 
 ### 自動テスト
 
@@ -106,7 +119,11 @@ $ docker-compose exec laravel php artisan tests/FeatureSeparate/BuyingItemDeadlo
 ### 認証
 
 - [laravel sanctum の SPA認証](https://readouble.com/laravel/10.x/ja/sanctum.html#spa-authentication) を利用
-  - FIXME [SPA認証を選んでいる理由を解説]
+- `sanctum` は APIトークンの認証方式と、 SPA認証の方式を提供しているが、今回はSPA認証の方式を取っている。
+- API トークンはシンプルな機能であるがゆえに、例えば以下のような点で、自前で設計・実装する必要がある部分がある。
+  - フロントエンドでどのようにトークンを保持するか？ => セキュアなのは cookie ベースでの保存となるが、そうすると、cookieベースであるSPA認証とやることがあまり変わらなくなる
+  - バックエンド側でどのようにトークンを保持するか？
+- swagger UI（ブラウザ）においては SPA認証の方式が簡単に使えるため、今回はこの形を取っている
 
 ### OpenAPI 定義の出力（および、swagger ui）
 

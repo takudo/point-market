@@ -108,4 +108,21 @@ class UserController extends Controller
         }
         return response(['message' => 'Email verification is done.'], 200);
     }
+
+    #[OA\Delete(
+        path: '/api/logout',
+        operationId: 'deleteUserLogin',
+        tags: ['User'],
+        responses: [
+            new OA\Response(response: 204, description: 'No content'),
+            new OA\Response(response: 401, description: 'Not allowed'),
+        ]
+    )]
+    public function logout(Request $request)
+    {
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return response()->noContent();
+    }
 }
